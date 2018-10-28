@@ -118,3 +118,7 @@ end
 j = dropmissing(by(df, :ExposureTime, d -> d.ExposureBias))
 cc = by(j, [:ExposureTime, :x1], d -> length(d.x1), sort=true)
 =#
+
+# TODO: change histograms to percentages
+# TODO: scatterplots can be better than histogram (see [this example](https://thatpixelgeek.com/2008/10/using-exiftool-to-find-your-most-used-focal-length/
+))
