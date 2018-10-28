@@ -3,3 +3,5 @@ julia 1.0.x
 ImageMagick
 Plots
 GR
+CSV
+DataFrames
