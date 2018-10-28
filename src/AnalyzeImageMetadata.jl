@@ -107,8 +107,10 @@ Return exif objects for each image in a directory
 function return_exif_dir(imagedir::String, imageformat::String)
   println("Reading EXIF data...")
   imagefiles = return_images(imagedir, imageformat)
-  exif_objects = Array{ImageMetaData}(undef, length(imagefiles))
-  pp = ProgressMeter.Progress(length(imagefiles))
+  nfiles = length(imagefiles)
+  println("    There are $nfiles files")
+  exif_objects = Array{ImageMetaData}(undef, nfiles)
+  pp = ProgressMeter.Progress(nfiles)
   for (index, ff) in enumerate(imagefiles)
    exif_objects[index] = ImageMetaData(return_exif(ff))
    next!(pp)
@@ -156,6 +158,9 @@ function main(imagedir::String; imageformat::String="jpg")
   end
   df = objects_to_df(imagedir, imageformat, savedir)
   allplots(df::DataFrame, savedir::String)
+  println("Plots are in $savedir")
 end
+
+main(ARGS[1], imageformat=ARGS[2])
 
 end # module

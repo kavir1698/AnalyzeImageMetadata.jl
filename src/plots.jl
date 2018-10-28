@@ -6,9 +6,12 @@ using StatsBase: countmap, mean
 
 Histogram of ISO values
 """
-function ISO_histogram(df::DataFrame)
+function ISO_histogram(df::DataFrame, savedir)
+  if count(a->!ismissing(a), df[:ISO]) <= 10# || length(unique(df[:ISO])) <= 10
+    return
+  end
   histogram(collect(skipmissing(df[:ISO])), bins=20, label="", xlabel="ISO ratings", ylabel="Frequency", color="black")
-  outname = "isoratings_hist.png"
+  outname = joinpath(savedir, "isoratings_hist.png")
   png(outname)
   return outname
 end
@@ -27,7 +30,7 @@ function ISO_bar(df::DataFrame, savedir)
   y = collect(values(counts))
   sumy = sum(y)
   ys = [round(i/sumy, digits=2) for i in y]
-  bar(xs, ys, label="", xlabel="ISO ratings", ylabel="Frequency", color="orange")
+  bar(log.(10, xs), ys, label="", xlabel="Log10 ISO", ylabel="Frequency", color="orange")
   outname = joinpath(savedir,"isoratings_bar.png")
   png(outname)
   return outname
@@ -38,9 +41,14 @@ end
 
 Histogram of exposure times
 """
-function exposureTime_histogram(df::DataFrame)
-  histogram(collect(skipmissing(df[:ExposureTime])), bins=20, label="", xlabel="Exposure time (sec)", ylabel="Frequency", color="black")
-  outname = "exposureTime_hist.png"
+function exposureTime_histogram(df::DataFrame, savedir)
+  if count(a->!ismissing(a), df[:ExposureTime]) <= 10# || length(unique(df[:ExposureTime])) <= 10
+    return
+  end
+  j = collect(skipmissing(df[:ExposureTime]))
+  j = log.(10, j)
+  histogram(j, bins=20, label="", xlabel="Log10 shutterspeed (sec)", ylabel="Frequency", color="black")
+  outname = joinpath(savedir, "exposureTime_hist.png")
   png(outname)
   return outname
 end
@@ -60,7 +68,7 @@ function exposureTime_bar(df::DataFrame, savedir)
   y = collect(values(counts))
   sumy = sum(y)
   ys = [round(i/sumy, digits=2) for i in y]
-  bar(xs, ys, label="", xlabel="Log shutter speed (sec)", ylabel="Frequency", color="orange", xscale=:log)
+  bar(log.(10, xs), ys, label="", xlabel="Log10 shutter speed (sec)", ylabel="Frequency", color="orange")
   outname = joinpath(savedir, "shutterSpeed_bar.png")
   png(outname)
   return outname
@@ -71,9 +79,12 @@ end
 
 Histogram of exposure Biases
 """
-function exposureBias_histogram(df::DataFrame)
+function exposureBias_histogram(df::DataFrame, savedir)
+  if count(a->!ismissing(a), df[:ExposureBias]) <= 10# || length(unique(df[:ExposureTime])) <= 10
+    return
+  end
   histogram(collect(skipmissing(df[:ExposureBias])), bins=20, label="", xlabel="Exposure bias", ylabel="Frequency", color="black")
-  outname = "exposureBias_hist.png"
+  outname = joinpath(savedir, "exposureBias_hist.png")
   png(outname)
   return outname
 end
@@ -218,7 +229,8 @@ function datetime_heatmap(df::DataFrame, savedir)
   if count(a->!ismissing(a), df[:Date]) <= 10 || count(a->!ismissing(a), df[:Time]) <= 10
     return
   end
-  dates_by_hour = dropmissing(by(df, :Date, d -> hour.(d.Time)))
+  dd = df[findall(a->!ismissing(a), df.Time), :]
+  dates_by_hour = dropmissing(by(dd, :Date, d -> hour.(d.Time)))
   dbh_count = by(dates_by_hour, [:Date, :x1], d -> length(d.x1), sort=true)
   ys = [string(i) for i in (dbh_count[:Date])]
   unique_days = unique(ys)
@@ -228,6 +240,9 @@ function datetime_heatmap(df::DataFrame, savedir)
   nhours = 24
   zs = fill(0.0, 1:ndays, 1:nhours)
   for (dd, tt, cc) in zip(ys, xs, dbh_count[3])
+    if tt == 0
+      tt = 24
+    end
     ddind = daydict[dd]
     zs[ddind, tt] = convert(Float64, cc)
   end
@@ -249,8 +264,9 @@ function isoTime_bar(df::DataFrame, savedir)
   if count(a->!ismissing(a), df[:Time]) <= 10 || count(a->!ismissing(a), df[:ISO]) <= 10
     return
   end
-  df[:Hour] = hour.(df[:Time])
-  j = dropmissing(by(df, :Hour, d -> d.ISO))
+  dd = df[intersect(findall(a->!ismissing(a), df.Time), findall(a->!ismissing(a), df.ISO)), :]
+  dd[:Hour] = hour.(dd[:Time])
+  j = dropmissing(by(dd, :Hour, d -> d.ISO))
   jmean = by(j, :Hour, d -> mean(d.x1), sort=true)
 
   bar(jmean[1], jmean[2], label="", xlabel="Hour", ylabel="Average ISO", color="orange")
@@ -264,8 +280,9 @@ end
 
 function allplots(df::DataFrame, savedir::String)
   println("Plotting...")
-  exposureBias_scatter(df, savedir)
+  exposureBias_histogram(df, savedir)
   ISO_bar(df, savedir)
+  ISO_histogram(df, savedir)
   exposureTime_bar(df, savedir)
   datetime_heatmap(df, savedir)
   brightness_histogram(df, savedir)
