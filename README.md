@@ -26,7 +26,7 @@ The package recursively reads exif data from images in a directory and reports t
 
 ![isotime](images/isoTime_bar.png)
 
-### A heatmap of date and time of shooting photos
+### Heatmap of the date and time of photos
 
 ![datetime](images/datetime_heatmap.png)
 
@@ -41,7 +41,7 @@ The package recursively reads exif data from images in a directory and reports t
 
 # Installation
 
-This package works with Julia 1.0. Clone it as follows:
+This package works with Julia 1.0. Clone like this:
 
 ```
 git clone https://github.com/kavir1698/AnalyzeImageMetadata.jl.git
