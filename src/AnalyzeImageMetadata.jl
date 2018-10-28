@@ -112,7 +112,7 @@ end
 Return all exif data of an image in a dictionary
 """
 function return_exif(imagefile::String)
-  exif_dict = magickinfo(imagefile, desired_tags)  # this is a bottleneck
+  exif_dict = magickinfo(imagefile, desired_tags)  # this is a bottleneck. exiftool is way faster
   return exif_dict
 end
 
@@ -140,6 +140,16 @@ function return_exif_dir(imagedir::String; imageformat::String="jpg")
    exif_objects[index] = ImageMetaData(return_exif(ff))
   end
   return imagefiles, exif_objects
+end
+
+function objects_to_df(exif_objects)
+  colnames = collect(fieldnames(AnalyzeImageMetadata.ImageMetaData))
+  df = DataFrame([[getfield(exif_objects[1], i)] for i in colnames], colnames)
+  nfiles = length(exif_objects)
+  for index in 2:nfiles
+    push!(df, [getfield(exif_objects[index], i) for i in colnames])
+  end
+  return df
 end
 
 end # module
