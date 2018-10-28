@@ -1,10 +1,11 @@
-module AnalyzeExif
+module AnalyzeImageMetadata
 
 using ImageMagick
 using Dates
 
-include("plots.jl")
+export ImageMetaData
 
+include("plots.jl")
 
 const desired_tags = ["exif:XResolution", "exif:YResolution", "exif:BrightnessValue", "exif:FocalLength", "exif:DateTime", "exif:Make", "exif:FocalLengthIn35mmFilm", "exif:MaxApertureValue", "exif:Model", "exif:FNumber", "exif:ExposureTime", "exif:MeteringMode", "exif:Flash", "exif:ISOSpeedRatings", "exif:ExposureBiasValue", "exif:ResolutionUnit"]
 

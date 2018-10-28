@@ -1,5 +1,5 @@
 authors = ["Ali R. Vahdati <arv.kavir@gmail.com>"]
-name = "AnalyzeExif"
+name = "AnalyzeImageMetadata"
 uuid = "9c4d1c52-da06-11e8-2e90-83c4eb0e4153"
 version = "0.1.0"
 
