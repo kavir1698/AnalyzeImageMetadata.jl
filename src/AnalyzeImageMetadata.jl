@@ -4,6 +4,7 @@ using ImageMagick
 using Dates
 using DataFrames
 using CSV
+using ProgressMeter
 
 include("plots.jl")
 
@@ -15,11 +16,11 @@ struct ImageMetaData
   YResolution::Union{Int64, Missing} # in ResolutionUnit
   ResolutionUnit::Union{String, Missing}
   BrightnessValue::Union{Float64, Missing}
-  FocalLength::Union{Int64, Missing}
+  FocalLength::Union{Float64, Missing}
   Date::Union{Date, Missing}
   Time::Union{Time, Missing}
   Make::Union{String, Missing}  # Camera maker
-  FocalLengthIn35mmFilm::Union{Int64, Missing}
+  FocalLengthIn35mmFilm::Union{Float64, Missing}
   MaxApertureValue::Union{Float64, Missing}
   Model::Union{String, Missing}  # Camera model
   FNumber::Union{Float64, Missing}  # The f-number of an optical system is the ratio of the system's focal length to the diameter of the entrance pupil. It is a dimensionless number that is a quantitative measure of lens speed, and an important concept in photography. It is also known as the focal ratio, f-ratio, or f-stop. It is the reciprocal of the relative aperture.
@@ -41,7 +42,7 @@ function ImageMetaData(exif_dict::Dict)
 
   YResolution = exif_dict["exif:YResolution"] == nothing ? missing : parse(Int64, split(exif_dict["exif:YResolution"], "/")[1])
 
-  FocalLength = exif_dict["exif:FocalLength"] == nothing ? missing : Int64(evalexpression(Meta.parse(exif_dict["exif:FocalLength"])))
+  FocalLength = exif_dict["exif:FocalLength"] == nothing ? missing : Float64(evalexpression(Meta.parse(exif_dict["exif:FocalLength"])))
 
   ResolutionUnit = exif_dict["exif:ResolutionUnit"] == nothing ? missing : exif_dict["exif:ResolutionUnit"]
 
@@ -51,7 +52,7 @@ function ImageMetaData(exif_dict::Dict)
 
   Make = exif_dict["exif:Make"] == nothing ? missing : exif_dict["exif:Make"]
 
-  FocalLengthIn35mmFilm = exif_dict["exif:FocalLengthIn35mmFilm"] == nothing ? missing : parse(Int64, exif_dict["exif:FocalLengthIn35mmFilm"])
+  FocalLengthIn35mmFilm = exif_dict["exif:FocalLengthIn35mmFilm"] == nothing ? missing : parse(Float64, exif_dict["exif:FocalLengthIn35mmFilm"])
 
   MaxApertureValue = exif_dict["exif:MaxApertureValue"] == nothing ? missing : evalexpression(Meta.parse(exif_dict["exif:MaxApertureValue"]))
   
@@ -104,16 +105,19 @@ end
 Return exif objects for each image in a directory
 """
 function return_exif_dir(imagedir::String, imageformat::String)
+  println("Reading EXIF data...")
   imagefiles = return_images(imagedir, imageformat)
   exif_objects = Array{ImageMetaData}(undef, length(imagefiles))
+  pp = ProgressMeter.Progress(length(imagefiles))
   for (index, ff) in enumerate(imagefiles)
    exif_objects[index] = ImageMetaData(return_exif(ff))
+   next!(pp)
   end
   return imagefiles, exif_objects
 end
 
-function objects_to_df(imagedir::String, imageformat::String)
-  outfile = joinpath(imagedir, "images_metadata.csv")
+function objects_to_df(imagedir::String, imageformat::String, savedir::String)
+  outfile = joinpath(savedir, "images_metadata.csv")
   if isfile(outfile)
     colnames = collect(fieldnames(ImageMetaData))
     fieldtypes = [fieldtype(ImageMetaData, i) for i in colnames]
@@ -123,6 +127,7 @@ function objects_to_df(imagedir::String, imageformat::String)
 
   imagefiles, exif_objects = return_exif_dir(imagedir, imageformat)
 
+  println("Creating a dataframe of EXIF data...")
   colnames = collect(fieldnames(ImageMetaData))
   ncols = length(colnames)
   nfiles = length(exif_objects)
@@ -142,11 +147,15 @@ function objects_to_df(imagedir::String, imageformat::String)
   return df
 end
 
-# TODO: put an option to find images recursively or only the current dir
+# TODO: put an option to choose whether images are retrieved recursively or only the current dir
 # TODO: include multiple image formats in one analysis
 function main(imagedir::String; imageformat::String="jpg")
-  df = objects_to_df(imagedir, imageformat)
-  
+  savedir = joinpath(imagedir, "AnalyzeImageMetadata")
+  if !isdir(savedir)
+    mkdir(savedir)
+  end
+  df = objects_to_df(imagedir, imageformat, savedir)
+  allplots(df::DataFrame, savedir::String)
 end
 
 end # module
