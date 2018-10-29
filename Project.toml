@@ -1,6 +1,15 @@
-authors = ["Ali R. Vahdati <arv.kavir@gmail.com>"]
 name = "AnalyzeImageMetadata"
 uuid = "9c4d1c52-da06-11e8-2e90-83c4eb0e4153"
+authors = ["Ali R. Vahdati <arv.kavir@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
+ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+
+[compat]
+julia = "1.0"
