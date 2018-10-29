@@ -41,13 +41,19 @@ The package recursively reads exif data from images in a directory and reports t
 
 # Installation
 
-This package works with Julia 1.0. Clone like this:
+To let the package manager handle installing dependencies, install the package from within Julia:
+
+```
+]develop https://github.com/kavir1698/AnalyzeImageMetadata.jl
+```
+
+This package works with Julia 1.0. To install the package manually, first clone the repository:
 
 ```
 git clone https://github.com/kavir1698/AnalyzeImageMetadata.jl.git
 ```
 
-It requires these Julia packages: `ImageMagick`, `Plots`, `GR`, `CSV`, `DataFrames`, `ProgressMeter`.
+Then install the following packages: `ImageMagick`, `Plots`, `GR`, `CSV`, `DataFrames`, `ProgressMeter`.
 
 # Usage
 
